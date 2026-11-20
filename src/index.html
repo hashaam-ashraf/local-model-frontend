@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>local-model test console</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>local-model test console</h1>
+  <label>Project
+    <select id="project"></select>
+  </label>
+  <label>Admin token
+    <input id="token" type="password" placeholder="ADMIN_TOKEN from the api's .env" autocomplete="off">
+  </label>
+  <span id="api-status" class="status"></span>
+</header>
+
+<main>
+  <section id="kb">
+    <div class="section-head">
+      <h2>Knowledge base</h2>
+      <button id="reindex" type="button" class="secondary" title="Rebuild the index from the files on the server">Re-index</button>
+    </div>
+
+    <label id="drop" class="drop">
+      <input id="picker" type="file" accept=".md,text/markdown" multiple hidden>
+      <strong>Upload markdown pages</strong>
+      <span>Drop .md files here or click to choose. A page with the same name is replaced.</span>
+    </label>
+
+    <p id="kb-message" class="message" hidden></p>
+    <ul id="files"></ul>
+  </section>
+
+  <section id="chat">
+    <div class="section-head">
+      <h2>Chat</h2>
+      <button id="new-chat" type="button" class="secondary">New chat</button>
+    </div>
+    <div id="log"></div>
+    <form id="form">
+      <input id="question" placeholder="Ask a question" autocomplete="off" required>
+      <button id="send">Send</button>
+    </form>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

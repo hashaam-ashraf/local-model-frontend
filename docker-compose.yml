@@ -1,0 +1,20 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    image: local-model-frontend
+    environment:
+      API_UPSTREAM: ${API_UPSTREAM:-api:8000}
+    volumes:
+      - ./src:/usr/share/nginx/html:ro   # edits show on refresh, no rebuild
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    networks:
+      - api
+
+# The network of the local-model stack, so the api is reachable by its service name
+networks:
+  api:
+    name: ${API_NETWORK:-local-model_default}
+    external: true
