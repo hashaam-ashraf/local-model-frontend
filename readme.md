@@ -1,6 +1,6 @@
 # local-model-frontend
 
-A browser console for testing the [local-model](../local-model) service end to end: pick a project, upload or delete knowledge base pages, and ask questions.
+A browser console for testing the [local-model](../local-model) service end to end: pick a project, upload or delete knowledge base pages, and ask questions with any of the models the project allows.
 
 ```
 browser ──► web (nginx, port 8080) ──► /api/* ──► local-model api
@@ -24,6 +24,7 @@ Open http://localhost:8080 and paste the `ADMIN_TOKEN` from local-model's `.env`
 2. Upload one or more `.md` pages. They are indexed straight away; the message shows how many sections the index holds.
 3. Ask a question the pages answer, then one they do not — the agent should say it doesn't know and offer a person.
 4. Delete a page and ask again: the answer should no longer use it.
+5. If the project lists more than one model, pick another in the **Model** menu above the chat and ask again to compare. The project's default is listed first.
 
 **Re-index** rebuilds the index from the files on the server; use it after changing files in local-model's `kb/` folder by hand.
 

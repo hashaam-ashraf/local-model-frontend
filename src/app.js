@@ -9,11 +9,13 @@ const fileList = $("files");
 const drop = $("drop");
 const picker = $("picker");
 const reindexButton = $("reindex");
+const modelSelect = $("model");
 const log = $("log");
 const questionInput = $("question");
 const sendButton = $("send");
 
 let project = null;
+let projects = [];
 let messages = [];
 
 // --- api ---
@@ -53,7 +55,7 @@ function fallback(status) {
 
 async function loadProjects() {
   try {
-    const list = await (await request("/projects")).json();
+    const list = (projects = await (await request("/projects")).json());
     apiStatus.textContent = list.length ? "api connected" : "api connected, no projects configured";
     apiStatus.className = "status";
     const wanted = new URLSearchParams(location.search).get("project");
@@ -68,6 +70,9 @@ async function loadProjects() {
 
 function selectProject() {
   project = projectSelect.value || null;
+  const models = projects.find((p) => p.slug === project)?.models || [];
+  modelSelect.replaceChildren(...models.map((name) => new Option(name)));
+  $("model-label").hidden = models.length < 2;
   newChat();
   loadFiles();
 }
@@ -196,7 +201,7 @@ async function ask(event) {
     const res = await request(`/${project}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, model: modelSelect.value || null }),
     });
     const reader = res.body.getReader();
     const decoder = new TextDecoder();

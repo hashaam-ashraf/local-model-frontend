@@ -104,6 +104,8 @@ section {
 }
 
 .section-head { display: flex; justify-content: space-between; align-items: center; }
+#model-label { flex-direction: row; align-items: center; gap: 6px; margin: 0 8px 0 auto; }
+#model-label[hidden] { display: none; }
 
 .drop {
   border: 1.5px dashed var(--border);
