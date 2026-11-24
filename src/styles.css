@@ -137,6 +137,8 @@ section {
 #files .path { flex: 1; overflow-wrap: anywhere; }
 #files .size { color: var(--muted); font-size: 12px; white-space: nowrap; }
 
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--muted); }
+
 #log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
 
 .msg { padding: 9px 13px; border-radius: 10px; white-space: pre-wrap; max-width: 85%; overflow-wrap: anywhere; }

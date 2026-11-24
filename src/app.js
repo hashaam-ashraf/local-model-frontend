@@ -1,4 +1,5 @@
 const API = "/api/v1";
+const PAGE_SIZE = 50;
 
 const $ = (id) => document.getElementById(id);
 const projectSelect = $("project");
@@ -9,12 +10,16 @@ const fileList = $("files");
 const drop = $("drop");
 const picker = $("picker");
 const reindexButton = $("reindex");
+const pager = $("pager");
+const prevButton = $("prev");
+const nextButton = $("next");
 const modelSelect = $("model");
 const log = $("log");
 const questionInput = $("question");
 const sendButton = $("send");
 
 let project = null;
+let filesPage = 1;
 let projects = [];
 let messages = [];
 
@@ -74,6 +79,7 @@ function selectProject() {
   modelSelect.replaceChildren(...models.map((name) => new Option(name)));
   $("model-label").hidden = models.length < 2;
   newChat();
+  filesPage = 1;
   loadFiles();
 }
 
@@ -97,16 +103,29 @@ function formatSize(bytes) {
 
 async function loadFiles(keepMessage = false) {
   fileList.replaceChildren();
+  pager.hidden = true;
   if (!project) return setKbEnabled(false);
   if (!tokenInput.value.trim()) {
     setKbEnabled(false);
     return say("Enter the admin token to manage the knowledge base.");
   }
   try {
-    const files = await (await request(`/${project}/files`, {}, true)).json();
+    const query = `page=${filesPage}&page_size=${PAGE_SIZE}`;
+    const { total, files } = await (await request(`/${project}/files?${query}`, {}, true)).json();
+    const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (filesPage > lastPage) {
+      // The last page emptied, for example after deleting its only file.
+      filesPage = lastPage;
+      return loadFiles(keepMessage);
+    }
     setKbEnabled(true);
-    if (!keepMessage) say(files.length ? "" : "No pages yet. Upload one to start.");
+    if (!keepMessage) say(total ? "" : "No pages yet. Upload one to start.");
     fileList.replaceChildren(...files.map(fileRow));
+    const first = (filesPage - 1) * PAGE_SIZE + 1;
+    $("page-info").textContent = `${first}–${first + files.length - 1} of ${total}`;
+    prevButton.disabled = filesPage === 1;
+    nextButton.disabled = filesPage === lastPage;
+    pager.hidden = total <= PAGE_SIZE;
   } catch (err) {
     setKbEnabled(false);
     say(err.message, "error");
@@ -138,7 +157,8 @@ async function uploadFiles(files) {
   setKbEnabled(false);
   try {
     const result = await (await request(`/${project}/files`, { method: "POST", body }, true)).json();
-    say(`Uploaded ${result.files.join(", ")}. The index now has ${result.sections} section(s).`, "ok");
+    const names = result.files.length > 5 ? `${result.files.length} files` : result.files.join(", ");
+    say(`Uploaded ${names}: ${result.sections} section(s) indexed.`, "ok");
   } catch (err) {
     say(err.message, "error");
   }
@@ -227,11 +247,20 @@ async function ask(event) {
 tokenInput.value = sessionStorage.getItem("adminToken") || "";
 tokenInput.addEventListener("change", () => {
   sessionStorage.setItem("adminToken", tokenInput.value.trim());
+  filesPage = 1;
   loadFiles();
 });
 projectSelect.addEventListener("change", selectProject);
 picker.addEventListener("change", () => uploadFiles([...picker.files]));
 reindexButton.addEventListener("click", reindex);
+prevButton.addEventListener("click", () => {
+  filesPage -= 1;
+  loadFiles();
+});
+nextButton.addEventListener("click", () => {
+  filesPage += 1;
+  loadFiles();
+});
 $("new-chat").addEventListener("click", newChat);
 $("form").addEventListener("submit", ask);
 

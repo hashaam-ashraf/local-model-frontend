@@ -21,8 +21,8 @@ Open http://localhost:8080 and paste the `ADMIN_TOKEN` from local-model's `.env`
 ## Test the flow
 
 1. Choose a project.
-2. Upload one or more `.md` pages. They are indexed straight away; the message shows how many sections the index holds.
-3. Ask a question the pages answer, then one they do not — the agent should say it doesn't know and offer a person.
+2. Upload one or more `.md` pages. They are indexed straight away; the message shows how many sections were indexed. The list shows 50 pages at a time.
+3. Ask a question the pages answer, then one they do not — the agent should say it doesn't know.
 4. Delete a page and ask again: the answer should no longer use it.
 5. If the project lists more than one model, pick another in the **Model** menu above the chat and ask again to compare. The project's default is listed first.
 
