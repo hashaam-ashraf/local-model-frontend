@@ -3,59 +3,146 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>local-model test console</title>
+<title>local-model</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header>
-  <h1>local-model test console</h1>
-  <label>Project
-    <select id="project"></select>
+
+<form id="login" class="card" hidden>
+  <h1>local-model</h1>
+  <label>Email
+    <input id="login-email" type="email" autocomplete="username" required>
   </label>
-  <label>Admin token
-    <input id="token" type="password" placeholder="ADMIN_TOKEN from the api's .env" autocomplete="off">
+  <label>Password
+    <input id="login-password" type="password" autocomplete="current-password" required>
   </label>
-  <span id="api-status" class="status"></span>
-</header>
+  <button>Log in</button>
+  <p id="login-message" class="message" hidden></p>
+</form>
 
-<main>
-  <section id="kb">
-    <div class="section-head">
-      <h2>Knowledge base</h2>
-      <button id="reindex" type="button" class="secondary" title="Rebuild the index from the files on the server">Re-index</button>
+<div id="app" hidden>
+  <header>
+    <h1>local-model</h1>
+    <nav id="nav">
+      <button type="button" data-view="chat">Chat</button>
+      <button type="button" data-view="files" data-admin>Files</button>
+      <button type="button" data-view="users" data-admin>Users</button>
+      <button type="button" data-view="tags" data-admin>Tags</button>
+    </nav>
+    <span id="status" class="status error"></span>
+    <span id="who" class="who"></span>
+    <button id="logout" type="button" class="secondary">Log out</button>
+  </header>
+
+  <main>
+    <div id="chat-view" class="view split" hidden>
+      <section class="side">
+        <button id="new-conversation" type="button">New conversation</button>
+        <ul id="conversations" class="rows"></ul>
+        <div id="conversations-pager" class="pager" hidden></div>
+      </section>
+      <section>
+        <div class="section-head">
+          <h2 id="conversation-title">New conversation</h2>
+          <label id="model-label" class="inline" hidden>Model
+            <select id="model"></select>
+          </label>
+          <button id="rename-conversation" type="button" class="secondary" hidden>Rename</button>
+          <button id="delete-conversation" type="button" class="danger" hidden>Delete</button>
+        </div>
+        <div id="log"></div>
+        <form id="message-form" class="send">
+          <input id="message" placeholder="Ask a question" autocomplete="off" required>
+          <button id="send">Send</button>
+        </form>
+      </section>
     </div>
 
-    <label id="drop" class="drop">
-      <input id="picker" type="file" accept=".md,text/markdown" multiple hidden>
-      <strong>Upload markdown pages</strong>
-      <span>Drop .md files here or click to choose. A page with the same name is replaced.</span>
-    </label>
-
-    <p id="kb-message" class="message" hidden></p>
-    <ul id="files"></ul>
-    <div id="pager" class="pager" hidden>
-      <button id="prev" type="button" class="secondary">Previous</button>
-      <span id="page-info"></span>
-      <button id="next" type="button" class="secondary">Next</button>
+    <div id="files-view" class="view" hidden>
+      <section>
+        <div class="section-head"><h2>Upload pages</h2></div>
+        <div class="field">
+          <span class="field-name">Tags for the uploaded pages</span>
+          <div id="upload-tags" class="checks"></div>
+          <span class="hint">A page with no tags is open to every user. With tags, only users who hold one of them get answers from it.</span>
+        </div>
+        <label id="drop" class="drop">
+          <input id="picker" type="file" accept=".md,text/markdown" multiple hidden>
+          <strong>Upload markdown pages</strong>
+          <span>Drop .md files here or click to choose. A page with the same name is replaced.</span>
+        </label>
+        <p id="files-message" class="message" hidden></p>
+      </section>
+      <section class="grow">
+        <div class="section-head"><h2>Knowledge base</h2></div>
+        <ul id="files" class="rows"></ul>
+        <div id="files-pager" class="pager" hidden></div>
+      </section>
     </div>
-  </section>
 
-  <section id="chat">
-    <div class="section-head">
-      <h2>Chat</h2>
-      <label id="model-label" hidden>Model
-        <select id="model"></select>
-      </label>
-      <button id="new-chat" type="button" class="secondary">New chat</button>
+    <div id="users-view" class="view" hidden>
+      <section>
+        <div class="section-head"><h2 id="user-form-title">Add a user</h2></div>
+        <form id="user-form" class="grid-form">
+          <label>Email
+            <input id="user-email" type="email" autocomplete="off" required>
+          </label>
+          <label>Name
+            <input id="user-name" autocomplete="off" required>
+          </label>
+          <label>Password
+            <input id="user-password" type="password" autocomplete="new-password" minlength="8" maxlength="72">
+          </label>
+          <label>Role
+            <select id="user-role">
+              <option value="user">User — chat only</option>
+              <option value="admin">Admin — everything</option>
+            </select>
+          </label>
+          <div class="field wide">
+            <span class="field-name">Tags</span>
+            <div id="user-tags" class="checks"></div>
+            <span class="hint">A user gets answers from untagged pages and from pages that share one of these tags. Admins are not limited by tags.</span>
+          </div>
+          <div class="actions wide">
+            <button id="user-save">Add user</button>
+            <button id="user-cancel" type="button" class="secondary" hidden>Cancel</button>
+          </div>
+        </form>
+        <p id="users-message" class="message" hidden></p>
+      </section>
+      <section class="grow">
+        <div class="section-head"><h2>Users</h2></div>
+        <ul id="users" class="rows"></ul>
+        <div id="users-pager" class="pager" hidden></div>
+      </section>
     </div>
-    <div id="log"></div>
-    <form id="form">
-      <input id="question" placeholder="Ask a question" autocomplete="off" required>
-      <button id="send">Send</button>
-    </form>
-  </section>
-</main>
 
-<script src="app.js"></script>
+    <div id="tags-view" class="view" hidden>
+      <section>
+        <div class="section-head"><h2>Add a tag</h2></div>
+        <form id="tag-form" class="grid-form">
+          <label>Name
+            <input id="tag-name" autocomplete="off" maxlength="100" required>
+          </label>
+          <label>Description
+            <input id="tag-description" autocomplete="off">
+          </label>
+          <div class="actions wide">
+            <button>Add tag</button>
+          </div>
+        </form>
+        <p id="tags-message" class="message" hidden></p>
+      </section>
+      <section class="grow">
+        <div class="section-head"><h2>Tags</h2></div>
+        <ul id="tags" class="rows"></ul>
+        <div id="tags-pager" class="pager" hidden></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>
